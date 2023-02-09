@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>注册/登录(这里已经没有什么用了只是记录一下</title>
+  <link rel="stylesheet" href="login.css">
+  <script src="js/jquery-3.6.1.min.js"></script>
+  <style>
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #b3d4fc;
+    }
+    .box {
+      width: 500px;
+      height: 120px;
+      position: absolute;
+      top:  -60px;
+      left: -70px;
+    }
+  </style>
+</head>
+<body>
+<script>
+  // 去注册按钮点击事件
+  function checkrr(){
+    let form_box=document.getElementsByClassName('form-box')[0];
+    let register_box=document.getElementsByClassName('register-box')[0];
+    let login_box=document.getElementsByClassName('login-box')[0];
+    form_box.style.transform='translateX(80%)';
+    login_box.classList.add('hidden');
+    register_box.classList.remove('hidden');
+  }
+  // 去登录按钮点击事件
+  function checkll(){
+    let form_box=document.getElementsByClassName('form-box')[0];
+    let register_box=document.getElementsByClassName('register-box')[0];
+    let login_box=document.getElementsByClassName('login-box')[0];
+    form_box.style.transform='translateX(0%)';
+    register_box.classList.add('hidden');
+    login_box.classList.remove('hidden');
+  }
+</script>
+<div class="box"><img src="img/logo.png"></div>
+<div class="container">
+  <div class="form-box">
+    <!-- 注册 -->
+    <div class="register-box hidden">
+      <h1 style="position: absolute;top: 60px">注册</h1>
+      <input id="name" placeholder="账号/昵喃" maxlength="15"></input>
+      <input id="pw" type="password" placeholder="密码" maxlength="20"></input>
+      <input id="pw2" type="password" placeholder="确认密码" maxlength="20"></input>
+      <input id="qq" placeholder="QQ(绑定用)" maxlength="15"></input>
+      <button id="BUTregister" onclick="
+      if($('#pw')[0].value == $('#pw2')[0].value && $('#name')[0].value.length >= 3 && $('#pw')[0].value.length >= 3 && $('#pw2')[0].value.length >= 3 && $('#qq')[0].value.length >=3)
+    {this.disabled=true;
+      $.post(
+        'api/register', JSON.stringify({us:$('#name')[0].value, pw:$('#pw')[0].value, qq:$('#qq')[0].value}),
+        r=>{
+          $('#result')[0].textContent=r.msg;
+          if(r.status){delay(20);window.history.back(-1)}
+        },
+        'json'
+      )}">创建账户</button>
+      <p id="result"></p>
+    </div>
+    <!-- 登录 -->
+    <div class="login-box">
+      <h1 style="position: absolute;top: 60px">登录</h1>
+      <input id="lname" placeholder="用户名" maxlength="15">
+      <input id="lpw" type="password" placeholder="密码" maxlength="20">
+      <div class="checkbox">
+        <input type="checkbox" id="remember"style="position: absolute;top: 350px;left: 15px" /><label for="remember" style="position: absolute;top: 353px;left: 45px;color: black" >记住密码</label>
+      </div>
+      <button id="BUTlogin" onclick="
+      if($('#lname')[0].value&&$('#lpw')[0].value)
+      {this.disabled=true;
+        $.post('api/login',JSON.stringify({us:$('#lname')[0].value,pw:$('#lpw')[0].value}),r=>{$('#result2')[0].textContent=r.msg;
+          if(r.status==0){window.history.back(-1)}
+          else{this.disabled=false}},'json')}">登录</button>
+      <p id="result2"></p>
+    </div>
+  </div>
+  <div class="con-box left">
+    <h2>欢迎来到<span>mdt数据库</span></h2>
+    <p>已有账号</p>
+    <button id="login" onclick="checkll()">去登录</button>
+  </div>
+  <div class="con-box right">
+    <h2>欢迎来到<span>mdt数据库</span></h2>
+    <p>没有账号？</p>
+    <button id="register" onclick="checkrr()">去注册</button>
+  </div>
+</div>
+</body>
+</html>

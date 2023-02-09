@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/jquery-3.6.1.min.js"></script>
+  <title>guapi的个人博客</title>
+  <style>
+    side {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    body{
+      height: 300vh;
+      background-color: #b3d4fc;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      overflow: hidden;
+      margin: 0;
+    }
+    .shell{
+      position: fixed;
+      width: 280px;
+      height: 650px;
+      background-color: #222222;
+    }
+    .buttons{
+      color: white;
+      padding: 16px 52px;
+      transition: .5s;
+    }
+    .buttons:hover{
+      background-color: #888888;
+    }
+    .buttons ul{
+      width: 228px;
+      height: 530px;
+      padding: 60px 0;
+      position: absolute;
+      top: -530px;
+      left: -228px;
+      background-color: #888888;
+      transition: .5s;
+    }
+    .buttons ul li{
+      padding: 16px 20px;
+    }
+    .buttons:hover ul{
+      left: 0;
+      top: 0
+    }
+    .buttons ul li:hover{
+      background-color: #222222
+    }
+  </style>
+</head>
+<body>
+<script type="module">
+  import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
+  import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls";
+  console.clear()
+  let scene = new THREE.Scene()
+  scene.background = new THREE.Color(0x160016)
+  let camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 1, 1000)
+  camera.position.set(8, 8, 8)
+  let renderer = new THREE.WebGLRenderer()
+  renderer.setSize(innerWidth, innerHeight)
+  document.body.appendChild(renderer.domElement)
+  window.addEventListener("resize", event => {
+    camera.aspect = innerWidth / innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(innerWidth, innerHeight)
+  })
+  let controls = new OrbitControls(camera, renderer.domElement)
+  controls.enableDamping = true
+  controls.enablePan
+  let gu = {
+    time: { value: 0 }
+  }
+  let sizes = []
+  let shift = []
+  // 创建移动函数
+  // 创建点的顶点数组（中间的球体）
+  let i = 0.0
+  let pts = []
+  let size = 10
+  while(i <= 20) {
+    i+=0.001
+    let x = (
+      (Math.sin(i)*
+        (Math.exp(Math.cos( i )) - 2 * Math.cos(4 * i) - Math.pow(Math.sin(i / 12), 5.0)
+        ))*size)
+    let z = (
+      (Math.cos(i)*
+        (Math.exp(Math.cos( i )) - 2 * Math.cos(4 * i) - Math.pow(Math.sin(i / 12), 5.0)
+        ))*size)
+    let f = 0
+    while(f <= 4){
+      f+=1
+      let matrix = new THREE.Matrix4().makeTranslation(x*Math.cos(0.2)+(Math.random() - 0.5),Math.abs(x)*Math.tan(0.2),z+(Math.random() - 0.5))
+      pts.push(new THREE.Vector3().setFromMatrixPosition(matrix))
+    }
+  }
+
+  // 生成一个点g，同时将点的大小和位置信息添加到sizes和shift数组中
+  let g = new THREE.BufferGeometry().setFromPoints(pts)
+  // 创建了一个缓冲几何体并设置sizes和shift属性
+  g.setAttribute("sizes", new THREE.Float32BufferAttribute(sizes, 1))
+  g.setAttribute("shift", new THREE.Float32BufferAttribute(shift, 4))
+  // 创建点材质
+  let m = new THREE.PointsMaterial({
+    // 表示点的大小
+    size: 0.25,
+    // 设置材质为透明
+    transparent: true,
+    // 表示禁用深度测试，使点可以叠加
+    depthTest: false,
+    // 使用假发混合模式
+    blending: THREE.AdditiveBlending,
+    // 在材质编译之前修改颜色器，在这里，它用来替换顶点着色器和片元着色器，添加uniform
+    // 和attribute，以鸡自定义颜色和移动
+    onBeforeCompile: shader => {
+      shader.uniforms.time = gu.time
+      // 首先，它为着色器设置了一个uniform变量time，该变量是在点材质中定义的，用来追踪时间
+      // 然后它定义了两个attribute变量sizes和shift，这两个变量是在缓冲几何体中定义的，用来控制点的大小和移动
+      // 最后使用replace方法来替换顶点着色器中的代码
+      shader.vertexShader = `
+                uniform float time;
+                attribute float sizes;
+                attribute vec4 shift;
+                varying vec3 vColor;
+                ${shader.vertexShader}
+                `
+        // 注意上面的 ` 不要漏掉了
+        // 使用replace来替换着色器中的代码
+        // 更新点的大小
+        .replace(
+          `gl_PointSize = size;`,
+          `gl_PointSize = size * sizes;`
+        )
+        // 更新点的颜色
+        .replace(
+          `#include <color_vertex>`,
+          `#include <color_vertex>
+                    float d = length(abs(position)/vec3(40.,60.,40));
+                    d=clamp(d,0.,1.);
+                    vColor = mix(vec3(22.,155.,0.),vec3(10.,60.,255.),d)/255.;`
+        )
+        // 记得加上分号
+        // 更新点的移动
+        .replace(
+          `#include <begin_vertex>`,
+          `#include <begin_vertex>
+                            float t = time;
+                            float moveT = mod(shift.x + shift.z * t,PI2);
+                            float moveS = mod(shift.y + shift.z * t,PI2);
+                            transformed += vec3(cos(moveS) * sin(moveT),cos(moveT),sin(moveS)*sin(moveT)) * shift.w;
+                            `
+        )
+      // 修改片元着色器，用来让点的边缘更加圆滑
+
+      // 首先，定义一个varying变量vColor，这个变量是在顶点着色器中定义的，用来传递点的颜色到片段着色器
+      // 然后使用replace方法来替换片段着色器的代码
+      shader.fragmentShader = `
+                    varying vec3 vColor;
+                    ${shader.fragmentShader}
+                `.replace(
+        `#include <clipping_planes_fragment>`,
+        `#include <clipping_planes_fragment>
+                        float d = length(gl_PointCoord.xy - 0.5);
+                    `
+      ).replace(
+        // 记得加上空格
+        `vec4 diffuseColor = vec4( diffuse, opacity );`,
+        `vec4 diffuseColor = vec4( vColor, smoothstep(0.5, 0.1, d)/* * 0.5+0.5*/);`
+      );
+    }
+
+  })
+  // -------------------------------------------------------------
+  // 创建点云并将其添加到场景中，并设置渲染循环
+  let p = new THREE.Points(g, m)
+  // 旋转顺序为"ZYX"
+  p.rotation.order = "ZYX"
+  // 把对象（p）添加到场景（scene）中
+  scene.add(p)
+  // 创建一个时钟对象clock
+  let clock = new THREE.Clock()
+  // 渲染循环，每次循环中会更新控制器，更新p的旋转角度，更新时间
+  renderer.setAnimationLoop(() => {
+    // 更新控制器
+    controls.update()
+    let t = clock.getElapsedTime()
+    renderer.render(scene, camera)
+  })
+</script>
+<h1 style="color: white;display: table" ></h1>
+<nav class="shell">
+  <ul class="buttons">
+    <li>
+      web
+      <ul>
+        <li>网站参考来源和感谢</li>
+        <a href="index.html" style="text-decoration: none;color:#ffffff" ><li>文档</li></a>
+        <a href="login.html" style="text-decoration: none;color:#ffffff"><li>一个简单的登录注册界面</li></a>
+      </ul>
+    </li>
+  </ul>
+  <ul class="buttons">
+    <li>
+      github
+      <ul>
+        <li>mindustry kts插件</li>
+        <li>web未完工(摆</li>
+      </ul>
+    </li>
+  </ul>
+  <ul class="buttons">
+    <li>
+      guapi
+      <ul>
+        <li>一些测试</li>
+      </ul>
+    </li>
+  </ul>
+  <ul class="buttons">
+    <li>
+      emmmmm
+      <ul>
+        <li>这里什么都没有</li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+</body>
+</html>

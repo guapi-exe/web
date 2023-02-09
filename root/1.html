@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/jquery-3.6.1.min.js"></script>
+  <title>guapimdt数据库</title>
+  <style>
+    side {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    body {
+      height: 100vh;
+      display: flex;
+      position: absolute;
+      top: 160px;
+      left: -10px;
+      align-items: center;
+      justify-content: flex-start;
+      background: url(img/R-C.png) no-repeat;
+      background-size: cover;
+
+    }
+    .shell{
+      position: fixed;
+      width: 280px;
+      height: 650px;
+      background-color: #8a98c9;
+    }
+    .buttons{
+      margin: 120px 0;
+      color: #fff;
+    }
+    .li{
+      letter-spacing: 2px;
+      font: 600 17px '';
+      padding: 16px 52px;
+      transition: .3s;
+    }
+    .li::after{
+      content: '';
+      position: absolute;
+      right: 10px;
+      margin-top: -22px;
+      display: block;
+      width: 20px;
+      height: 20px;
+      background-color: #fff;
+      border-radius: 50%;
+    }
+    .buttons>li:hover{
+      background-color: #beb5df;
+    }
+
+    .li ul{
+      width: 0;
+      height: 530px;
+      padding: 60px 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      background-color: #59699b;
+      transition: .3s;
+    }
+
+    .li ul li{
+      padding: 16px 24px;
+      transition: .3s;
+    }
+
+    .li:hover ul{
+      width: 228px;
+    }
+    .li ul li:hover{
+      background-color: #828eb9;
+    }
+  </style>
+  <style>
+    top {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 20px;
+      color: #f4f1de;
+    }
+
+    body2 {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image:linear-gradient(to right, #a18cd1, #fbc2eb);
+    }
+    .shell2{
+      display: flex;
+      justify-content: center;
+      position: absolute;
+      top: -20px;
+      left: 400px;
+      position: fixed;
+    }
+    .button{
+      background-color: #50536e;
+      width: 170px;
+      height: 65px;
+      text-align: center;
+      line-height: 65px;
+      transition: .3s;
+      cursor: pointer;
+    }
+    .button:hover{
+      background-color: #d15a39;
+    }
+    .button li:hover{
+      background-color: #ffb29d;
+    }
+    .button ul li{
+      height: 0;
+      transition: .2s;
+      opacity: 0;
+      transform: translateY(-65px);
+      background-color: #e07a5f;
+    }
+    .button:hover li{
+      height: 65px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+  <style>
+    body3 {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .box {
+      width: 20px;
+      height: 20px;
+      background: rgba(50,50,50,0.2);
+      position: absolute;
+      top: -170px;
+      left: 0;
+      display: flex;
+    }
+    .box2 {
+      width: 250px;
+      height: 80px;
+      border-top: 10px solid #8a98c9;
+      border-left: 10px solid #8a98c9;
+      border-bottom: 10px solid #8a98c9;
+      border-right: 10px solid #8a98c9;
+      background: rgba(250,250,250,0.2);
+      position: absolute;
+      top: -170px;
+      left: 100px;
+      display: flex;
+      font: 800 25px '';
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="box"><img src="img/GUAPI.png" width="100" height="100"></div>
+<div class="box2">guapimdt资源站</div>
+<nav class="shell">
+  <ul class="buttons">
+    <li class="li">
+      蓝图
+      <ul>
+        <li>上传蓝图</li>
+        <a href="lantu.html" style="text-decoration: none;color:#ffffff"><li>排行榜</li></a>
+        <li>所有蓝图</li>
+      </ul>
+    </li>
+    <li class="li">
+      地图
+      <ul>
+        <li>null</li>
+      </ul>
+    </li>
+
+    <li class="li">
+      游戏本体
+      <ul>
+        <li>null</li>
+      </ul>
+    </li>
+
+    <li class="li">
+      服务器
+      <ul>
+        <li>null</li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+<ul class="shell2">
+  <li class="button">
+    <span>我的</span>
+    <ul>
+      <button onclick="$.post('api/oneself',JSON.stringify(),r=>{
+        $('#result')[0].textContent=r.msg;
+        if(r.status = 0){ window.location.href='https://guapi.site/lantu.html'}
+        if(r.status = 1){ window.location.href='https://guapi.site/lantu.html'}
+      },'json')" style="text-decoration: none;color:#ffffff"><li>个人信息</li></button><p id="result"></p>
+      <li>我的投稿</li>
+      <li>我的消息</li>
+    </ul>
+  </li>
+  <li class="button">
+    <span>动态</span>
+    <ul>
+    <li>我的关注</li>
+      <li>官方更新</li>
+    </ul>
+  </li>
+  <li class="button">
+    <span>消息</span>
+  </li>
+  <li class="button">
+    <span>收藏</span>
+  </li>
+  <li class="button">
+    <span>投稿</span>
+    <ul>
+      <li>地图投稿</li>
+      <li>蓝图投稿</li>
+      <li>插件投稿</li>
+      <li>网站建议投稿</li>
+    </ul>
+  </li>
+</ul>
+</body>
+</html>
